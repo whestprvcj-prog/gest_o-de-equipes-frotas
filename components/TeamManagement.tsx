@@ -183,7 +183,7 @@ const TeamManagement: React.FC<TeamManagementProps> = ({
     const isFleetTab = activeTab === 'fleets';
     const title = isFleetTab ? 'Escala de Frotas' : 'Escala de Folgas Semanais';
 
-    printWindow.document.write('<html><head><title>' + title + ' - RotaFácil</title>');
+    printWindow.document.write('<html><head><title>' + title + ' - Estrutura Diária de Frotas</title>');
     printWindow.document.write('<style>');
     printWindow.document.write(`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');

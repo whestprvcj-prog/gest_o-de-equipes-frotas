@@ -114,7 +114,7 @@ export class GeminiLiveService {
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [addDeliveryStopTool, removeDeliveryStopTool, listStopsTool] }],
-          systemInstruction: `Você é um assistente logístico útil e eficiente para o aplicativo "RotaFácil". 
+          systemInstruction: `Você é um assistente logístico útil e eficiente para o aplicativo "Estrutura Diária de Frotas". 
           Ajude o motorista a gerenciar sua lista de entregas diárias. 
           Seja conciso, pois o usuário pode estar dirigindo.
           Fale português do Brasil de forma natural.

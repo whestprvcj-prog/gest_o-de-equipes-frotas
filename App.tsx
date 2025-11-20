@@ -1,13 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Users } from 'lucide-react';
 import { TeamMember, Fleet, TimeOffEntry } from './types';
 import TeamManagement from './components/TeamManagement';
 
+// Chaves para o LocalStorage
+const STORAGE_KEYS = {
+  MEMBERS: 'edf_team_members',
+  FLEETS: 'edf_fleets',
+  TIMEOFFS: 'edf_timeoffs'
+};
+
 const App: React.FC = () => {
-  // Team State
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [fleets, setFleets] = useState<Fleet[]>([]);
-  const [timeOffs, setTimeOffs] = useState<TimeOffEntry[]>([]);
+  // --- Initialization with LocalStorage ---
+  
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.MEMBERS);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Erro ao carregar membros", e);
+      return [];
+    }
+  });
+
+  const [fleets, setFleets] = useState<Fleet[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.FLEETS);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Erro ao carregar frotas", e);
+      return [];
+    }
+  });
+
+  const [timeOffs, setTimeOffs] = useState<TimeOffEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TIMEOFFS);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Erro ao carregar folgas", e);
+      return [];
+    }
+  });
+
+  // --- Persist Data Changes ---
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(teamMembers));
+  }, [teamMembers]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.FLEETS, JSON.stringify(fleets));
+  }, [fleets]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TIMEOFFS, JSON.stringify(timeOffs));
+  }, [timeOffs]);
 
   // --- Team Handlers ---
   const handleAddMember = (member: Omit<TeamMember, 'id'>) => {
@@ -20,9 +68,10 @@ const App: React.FC = () => {
 
   const handleRemoveMember = (id: string) => {
     setTeamMembers(prev => prev.filter(m => m.id !== id));
-    // Also remove associated time offs and fleet assignments if necessary
+    // Also remove associated time offs
     setTimeOffs(prev => prev.filter(t => t.memberId !== id));
-    // Logic for fleet removal could be added here if strict referential integrity is desired
+    // Note: We are keeping fleet history even if member is deleted for record integrity, 
+    // or you could filter fleets here too.
   };
 
   const handleAddFleet = (fleet: Omit<Fleet, 'id'>) => {
@@ -39,8 +88,9 @@ const App: React.FC = () => {
 
   // --- Time Off Handlers ---
   const handleAddTimeOff = (entry: Omit<TimeOffEntry, 'id'>) => {
-    // Remove existing entry for this member to ensure only one day off per week (optional rule, but common)
-    const filtered = timeOffs.filter(t => t.memberId !== entry.memberId);
+    // Remove existing entry for this member on this specific day (or globally if rule implies 1 day off/week)
+    // Assuming we want to prevent duplicates for same member+day
+    const filtered = timeOffs.filter(t => !(t.memberId === entry.memberId && t.dayOfWeek === entry.dayOfWeek));
     
     const newEntry: TimeOffEntry = {
       ...entry,
@@ -62,7 +112,7 @@ const App: React.FC = () => {
             <div className="bg-indigo-600 p-2 rounded-lg">
               <Users className="text-white w-5 h-5" />
             </div>
-            <h1 className="font-bold text-xl text-slate-800">Gestão de Equipes</h1>
+            <h1 className="font-bold text-xl text-slate-800">Estrutura Diária de Frotas</h1>
           </div>
           <div className="text-sm text-slate-500 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
